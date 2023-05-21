@@ -45,7 +45,7 @@ class User:
             if command[:2] == 'ls':
                 self.do_ls()
             elif command[:2] == 'cd':
-                self.do_cd()
+                self.do_cd(command)
             elif command[:3] == 'pwd':
                 self.do_pwd()
             elif command[:2] == 'rm':
@@ -92,6 +92,6 @@ class User:
 
 
 if __name__ == '__main__':
-    Server = Server('', 2000)
+    Server = Server('', 4000)
     Server.tcp_init()
     Server.task()

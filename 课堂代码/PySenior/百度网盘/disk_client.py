@@ -12,11 +12,15 @@ class Client:
 
     def tcp_init(self):
         self.client = socket(AF_INET, SOCK_STREAM)
-        self.client.bind((self.ip, self.port))
+        self.client.connect((self.ip, self.port))
 
     def send_command(self):
+        """
+        可以改进，使用dict，k-v -> command-函数名
+        :return:
+        """
         while True:
-            command = input()
+            command = input("输入命令")
             self.transmission_send_handle(command.encode('utf8'))
             if command[:2] == 'ls':
                 self.do_ls()
@@ -62,6 +66,6 @@ class Client:
 
 
 if __name__ == '__main__':
-    client = Client('', 2000)
+    client = Client('127.0.0.1', 4000)
     client.tcp_init()
     client.send_command()
