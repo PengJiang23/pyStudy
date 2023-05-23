@@ -1,5 +1,6 @@
 from socket import *
 import struct
+import os
 
 FILE_PROTOCAL_SIZE = 4
 
@@ -34,6 +35,8 @@ class Client:
                 self.do_gets(command)
             elif command[:4] == 'puts':
                 self.do_puts(command)
+            elif command[:4] == 'exit':
+                exit(0)
             else:
                 print('wrong command')
 
@@ -59,13 +62,39 @@ class Client:
         pass
 
     def do_gets(self, command):
-        pass
+        """
+        接收文件
+        :param command:
+        :return:
+        """
+        filename = command.split()[1]
+        file_content_size = self.client.recv(4)
+        filesize = struct.unpack('I', file_content_size)
+        total = 0
+        with open("下载" + filename, 'wb')as f:
+            while total <= filesize[0]:
+                data = self.client.recv(1000)
+                f.write(data)
+                total += len(data)
+                print('\r %5.2f%s' % (total / filesize[0] * 100, '%'), end='')
+            print('\r100.00%')
+        f.close()
 
     def do_puts(self, command):
-        pass
+        filename = command.split()[1]
+        file_size = os.stat(filename).st_size
+        self.client.send(struct.pack('I', file_size))
+        with open(filename, 'rb') as f:
+            while True:
+                file_content = f.read(1000)
+                if file_content:
+                    self.client.send(file_content)
+                else:
+                    break
+            f.close()
 
 
 if __name__ == '__main__':
-    client = Client('127.0.0.1', 4000)
+    client = Client('127.0.0.1', 4001)
     client.tcp_init()
     client.send_command()

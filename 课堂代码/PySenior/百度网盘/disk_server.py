@@ -85,13 +85,43 @@ class User:
         pass
 
     def do_gets(self, command):
-        pass
+        """
+        下载文件
+        先发文件名，及头部
+        告诉文件大小，C完整接收
+        循环发送文件内容
+        :param command:
+        :return:
+        """
+        filename = command.split()[1]
+        file_size = os.stat(filename).st_size
+        self.cs_socket.send(struct.pack('I', file_size))
+        with open(filename, 'rb') as f:
+            while True:
+                file_content = f.read(1000)
+                if file_content:
+                    self.cs_socket.send(file_content)
+                else:
+                    break
+            f.close()
+            # socket 关闭？
 
     def do_puts(self, command):
-        pass
+        filename = command.split()[1]
+        file_content_size = self.cs_socket.recv(4)
+        filesize = struct.unpack('I', file_content_size)
+        total = 0
+        with open("下载" + filename, 'wb')as f:
+            while total <= filesize[0]:
+                data = self.cs_socket.recv(1000)
+                f.write(data)
+                total += len(data)
+                print('\r %5.2f%s' % (total / filesize[0] * 100, '%'), end='')
+            print('\r100.00%')
+        f.close()
 
 
 if __name__ == '__main__':
-    Server = Server('', 4000)
+    Server = Server('', 4001)
     Server.tcp_init()
     Server.task()
